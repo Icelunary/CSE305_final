@@ -1,0 +1,10 @@
+(*This file some frequently used command so you don't need to type again and again
+  Also include some commands I often forgot
+*)
+
+ssh ubit@timberlake.cse.buffalo.edu
+use a file, # use "filename";;
+To compile: ocamlc -o name_after_compiled filename
+
+linux.vim
+vim: x to delete 1 character, d to delete 1 line.
