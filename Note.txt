@@ -8,3 +8,5 @@ To compile: ocamlc -o name_after_compiled filename
 
 linux.vim
 vim: x to delete 1 character, d to delete 1 line.
+
+ls ~regan/cse305/LANGUAGES/OCAML/
