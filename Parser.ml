@@ -137,7 +137,7 @@ and
 
    let rec groupUnops ell = match ell with
       [] -> []
-      | [x] -> [x]
+      | [x] -> [group x]
       | [any; Item(Op y)] -> let x = if y = "++" || y = "--" then "@"^y else y
                            in [Node((group any)::Item(Unop x)::[])]
       | (Item(Op y))::any::rest -> let x = if y = "++" || y = "--" then y^"@" else y
