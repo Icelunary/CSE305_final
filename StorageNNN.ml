@@ -2,39 +2,62 @@ module StorageNNN = struct
   (* type t = (string, string list) Hashtbl.t *)
 
   let storage n = object(self)
-    val tbl = Hashtbl.create n
-    (* val mutable test1 *)
+    val mutable tbl = Hashtbl.create n
 
-    (* method create n = test <- Hashtbl.create n *)
+    method add(key, value) =
+      Printf.printf "trying to add var: %s\n" value;
+      let _ = Hashtbl.add tbl key value in Some(value)
+      (* let history = try Hashtbl.find tbl key with Not_found -> [] in *)
+      
+      (* Hashtbl.replace tbl key (value::history) *)
 
-    method add name value =
-      let history = try Hashtbl.find tbl name with Not_found -> [] in
-      Hashtbl.replace tbl name (value::history)
+    method get key =
+      
+      let value = try Some(Hashtbl.find tbl key) with Not_found -> None in value
 
-    method get name =
-      let history = try Hashtbl.find tbl name with Not_found -> [] in
-      match history with
-        | [] -> None
-        | hd::_ -> Some hd
-
-    method print_log name =
-      match self#get name with
-        | None -> Printf.printf "Unbounded var: %s\n" name
+    method print_log key =
+      match self#get key with
+        | None -> Printf.printf "Unbounded value: %s\n" key
         | Some hd ->
-          Printf.printf "History of %s: current is %s and history below \n" name hd;
-          List.iter (fun v -> Printf.printf " %s |" v) (Hashtbl.find tbl name);
+          Printf.printf "History of %s: current is %s and history below \nCurrent<------>Old\n" key hd;
+          List.iter (fun v -> Printf.printf " %s |" v) (Hashtbl.find_all tbl key);
           Printf.printf "\n"
 
-    method print_log2 name =
-      match self#get name with
-        | None -> Printf.printf "Unbounded var: %s\n" name
-        | Some hd -> Hashtbl.find_all tbl name
+    method fetch(key) = 
+      self#get key
+    
+    method pop(key) = 
+      self#remove key
+    
+    method printHistoryAsList key = 
+      Hashtbl.find_all tbl key
+      (* let find = try Some(self#get key) with Not_found -> None in
+      match find with
+        | None -> None
+        | Some _ -> Some(Hashtbl.find_all tbl key) *)
 
     method remove key =
-      match self#get name with
-        | None -> Printf.printf "Unbounded var: %s\n" name
-        | Some hd -> Hashtbl.remove tbl key
+      match self#get key with
+        | None -> let _ = Printf.printf "Unbounded var: %s\n" key in None
+        | Some hd -> let _ = Hashtbl.remove tbl key in Some(hd)
+    
+    (* recursively add, use for test *)
+    method recurAdd = function
+      | [] -> Some("Succeed")
+      | (k, v)::rest -> let _= self#add(k, v) in let _ = Printf.printf "adding %s %s\n" k v in self#recurAdd rest
 
     end
 
 end;;
+
+(* Use for test *)
+let test = [("h", "hello"); ("h", "world"); ("h", "1"); ("1", "test")];;
+let store = StorageNNN.storage 100;;
+store#recurAdd test;;
+(* Then you can try to test other methods *)
+
+let a = Hashtbl.create 100;;
+Hashtbl.add a "h" "test1";;
+Hashtbl.add a "h" "test2";;
+Hashtbl.add a "h" "test3";;
+Hashtbl.add a "h" "test4";;
