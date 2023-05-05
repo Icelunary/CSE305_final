@@ -4,12 +4,17 @@ module StorageNNN = struct
   let storage n = object(self)
     val mutable tbl = Hashtbl.create n
 
+    method store(key, value) = Some(Hashtbl.replace tbl key value)
+
+    method fetch(key) = 
+      self#get key
+    
+    method pop(key) = 
+      self#remove key
+
     method add(key, value) =
-      Printf.printf "trying to add var: %s\n" value;
+      (* Printf.printf "trying to add var: %s\n" value; *)
       let _ = Hashtbl.add tbl key value in Some(value)
-      (* let history = try Hashtbl.find tbl key with Not_found -> [] in *)
-      
-      (* Hashtbl.replace tbl key (value::history) *)
 
     method get key =
       
@@ -19,16 +24,11 @@ module StorageNNN = struct
       match self#get key with
         | None -> Printf.printf "Unbounded value: %s\n" key
         | Some hd ->
-          Printf.printf "History of %s: current is %s and history below \nCurrent<------>Old\n" key hd;
+          Printf.printf "History of %s: current is %s and history below \nCurrent<---------->Old\n" key hd;
           List.iter (fun v -> Printf.printf " %s |" v) (Hashtbl.find_all tbl key);
           Printf.printf "\n"
-
-    method fetch(key) = 
-      self#get key
     
-    method pop(key) = 
-      self#remove key
-    
+    (* Commented one is print list as string *)
     method printHistoryAsList key = 
       Hashtbl.find_all tbl key
       (* let find = try Some(self#get key) with Not_found -> None in
