@@ -12,8 +12,8 @@
  
     (** Mixed int/float addition, type (string * string) -> string
      *)
-    let polyPlus (lo, ro) =
-       let lio = Swi.intOpt lo and rio = Swi.intOpt ro
+    let polyPlus (lo, ro) = 
+       let lio = Swi.intOpt lo and rio = Swi.intOpt ro 
        in match (lio, rio) with
           | (Some li, Some ri) -> string_of_int (li + ri)
           | (Some li, None) -> let rfo = Swi.floatOpt ro in
@@ -124,4 +124,9 @@
  
  
  
+ 
+ 
+ 
  end;;
+ 
+ 
