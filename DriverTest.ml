@@ -41,6 +41,7 @@ module Driver = struct
         | [] -> None
         | _ -> Some text
 
+        (* read file into text *)
     method process name = let txt = self#writeText name in match txt with
         | None -> raise (UnexpectedBug "No data read")
         | Some _ -> self#processLineByLine text
@@ -52,7 +53,7 @@ module Driver = struct
        1. second time "int a exp" -> use Hashtbl.add for a. So, if a is redeclare inside a new scope, it's dynamic binding. Not erasing old a
        2."a = exp" -> use Hashtbl.replace. So the old value binded to a is erased*)
     (* This method is expected to be called by method eval *)
-    method bind var value isDeclaration= storage#store(var, value, isDeclaration) 
+    method bind var value = storage#store(var, value) 
 
     method processLineByLine (arr: string list) = let _ = Printf.printf "trying to process\n" in match arr with
         | [] -> Some("Finished\n")
@@ -63,11 +64,15 @@ module Driver = struct
             | Some x -> Printf.printf "Evaluated %s\n" x
           in self#processLineByLine rest
     
-    method processLine line = let str = let _ = Printf.printf "processing line: %s\n" line in Swi.swi(line) in let firstItem = (str#getItem Swi.isWhitespace Swi.isAlpha) in match firstItem with
+    method processLine line = let _ = Printf.printf "processing line: %s\n" line in
+     let tokenList = Compile.tokenList2String (postfix line) in self#eval tokenList
+    (* let tokenList = postfix line *)
+    
+    (* method processLine line = let str = let _ = Printf.printf "processing line: %s\n" line in Swi.swi(line) in let firstItem = (str#getItem Swi.isWhitespace Swi.isAlpha) in match firstItem with
         | "Int" | "double" | "float" -> let _ = Printf.printf "case1\n" in let var = (str#getItem Swi.isWhitespace Swi.isAlpha)
            in let _ = self#bind var (self#eval(var^" "^str#getString)) true
              in Some(var)
-        | _ -> let _ = Printf.printf "case2\n" in Some (self#eval line)
+        | _ -> let _ = Printf.printf "case2\n" in Some (self#eval line) *)
     
     (* Only test the first line of code file *)
     method testFirst = match text with
@@ -76,7 +81,7 @@ module Driver = struct
 
     (* Get exp after "int|float|double" and evaluate it. Compile gives string list. We can iterate it to stack value and PolyOps|Storage
        once we encounter Unop|Binop|Fetch|Store. stack and storage are both inside this class*)
-    method eval exp = Compile.tokenList2String (postfix exp)
+    method eval tokenList = Some("s")
     (* 
        "fetch"::rest -> stack#peek 1 and storage fetch it
        "store"::rest -> stack#peek 2 and self#bind it, then replace two with one
