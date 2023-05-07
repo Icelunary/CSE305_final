@@ -9,7 +9,9 @@ module EvalStack = struct
 
                 method pop = match stack with
                 | [] -> None
-                | x::rest -> (stack <- rest); Some(x)
+                | x::rest ->
+                  stack <- rest;
+                  Some(x)
 
                 (* purely used for testing *)
                 method get_stack = stack
