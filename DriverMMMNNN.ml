@@ -17,7 +17,7 @@ exception BadInstruction;;
 
 
 module Driver = struct
-  exception UnexpectedBug of string;;
+  exception UnexpectedBug;;
   exception FileDoesNotExist;;
 
   class driver = object(self)
@@ -33,29 +33,56 @@ module Driver = struct
         | None -> close_in ic; List.rev acc in
       loop []
 
-    method execute_lines lines = match lines with
-      | line::rest -> if self#eval(line) == 0 then self#execute_lines(rest) else 1
+    method execute_lines lines = stack#clear; match lines with
+      | line::rest -> if self#eval(line) == 0 then self#execute_lines(rest) else raise UnexpectedBug
       | [] -> 0
 
     method process filename = match (self#read_file filename) with
-      | Some(content) -> self#execute_lines(content)
+      | Some(content) -> self#execute_lines(content);
       | None -> raise FileDoesNotExist
 
     method read_file name = match (self#read_lines name) with
         | [] -> None
         | text -> Some text
 
+    method stack_two_op f = match stack#peekTwo with
+      | None -> false
+      | Some(x, y) -> match stack#replaceTwoWithOne(f(x, y)); with
+        | None -> false
+        | Some(_) -> true
+
+    method storage_fetch = match stack#peekOne with
+      | None -> false
+      | Some(x) -> match storage#fetch(x) with
+        | None -> false
+        | Some(y) -> match stack#replaceOne(y) with
+          | None -> false
+          | Some(_) -> true
+
+    method storage_store = match stack#peekTwo with
+      | None -> false
+      | Some(x, y) -> match storage#store(x, y) with
+        | None -> false
+        | Some(_) -> match stack#replaceTwoWithOne(y) with
+          | Some(_) -> true
+          | None -> false
+
+    method stack_pop = match stack#pop with
+      | Some(_) -> true
+      | None -> false
+
+
     method eval_post x = match x with
       | SL.Const(y)::rest -> (stack#push(y)); self#eval_post(rest)
       | SL.Var(y)::rest -> stack#push(y); self#eval_post(rest)
       | SL.Neg::rest -> self#eval_post(rest)
-      | SL.Plus::rest -> self#eval_post(rest)
-      | SL.Minus::rest -> self#eval_post(rest)
-      | SL.Times::rest -> self#eval_post(rest)
-      | SL.Div::rest -> self#eval_post(rest)
-      | SL.Fetch::rest -> self#eval_post(rest)
-      | SL.Store::rest -> self#eval_post(rest)
-      | SL.Pop::rest -> (stack#popNoRet); self#eval_post(rest)
+      | SL.Plus::rest -> if self#stack_two_op(PolyOps.polyPlus) then self#eval_post(rest) else 1
+      | SL.Minus::rest -> if self#stack_two_op(PolyOps.polyMinus) then self#eval_post(rest) else 1
+      | SL.Times::rest -> if self#stack_two_op(PolyOps.polyTimes) then self#eval_post(rest) else 1
+      | SL.Div::rest -> if self#stack_two_op(PolyOps.polyDiv) then self#eval_post x else 1
+      | SL.Fetch::rest -> if self#storage_fetch then self#eval_post(rest) else 1
+      | SL.Store::rest -> if self#storage_store then self#eval_post(rest) else 1
+      | SL.Pop::rest -> if self#stack_pop then self#eval_post(rest) else 1
       | [] -> 0
       | _ -> 1
 
