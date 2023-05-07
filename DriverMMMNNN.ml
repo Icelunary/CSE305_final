@@ -34,11 +34,11 @@ module Driver = struct
       loop []
 
     method execute_lines lines = stack#clear; match lines with
-      | line::rest -> if self#eval(line) == 0 then self#execute_lines(rest) else raise UnexpectedBug
-      | [] -> 0
+      | line::rest -> if self#eval(line) then self#execute_lines(rest) else false
+      | [] -> true
 
     method process filename = match (self#read_file filename) with
-      | Some(content) -> self#execute_lines(content);
+      | Some(content) -> self#execute_lines(content)
       | None -> raise FileDoesNotExist
 
     method read_file name = match (self#read_lines name) with
@@ -76,20 +76,21 @@ module Driver = struct
       | SL.Const(y)::rest -> (stack#push(y)); self#eval_post(rest)
       | SL.Var(y)::rest -> stack#push(y); self#eval_post(rest)
       | SL.Neg::rest -> self#eval_post(rest)
-      | SL.Plus::rest -> if self#stack_two_op(PolyOps.polyPlus) then self#eval_post(rest) else 1
-      | SL.Minus::rest -> if self#stack_two_op(PolyOps.polyMinus) then self#eval_post(rest) else 1
-      | SL.Times::rest -> if self#stack_two_op(PolyOps.polyTimes) then self#eval_post(rest) else 1
-      | SL.Div::rest -> if self#stack_two_op(PolyOps.polyDiv) then self#eval_post x else 1
-      | SL.Fetch::rest -> if self#storage_fetch then self#eval_post(rest) else 1
-      | SL.Store::rest -> if self#storage_store then self#eval_post(rest) else 1
-      | SL.Pop::rest -> if self#stack_pop then self#eval_post(rest) else 1
-      | [] -> 0
-      | _ -> 1
+      | SL.Plus::rest -> if self#stack_two_op(PolyOps.polyPlus) then self#eval_post(rest) else false
+      | SL.Minus::rest -> if self#stack_two_op(PolyOps.polyMinus) then self#eval_post(rest) else false
+      | SL.Times::rest -> if self#stack_two_op(PolyOps.polyTimes) then self#eval_post(rest) else false
+      | SL.Div::rest -> if self#stack_two_op(PolyOps.polyDiv) then self#eval_post x else false
+      | SL.Fetch::rest -> if self#storage_fetch then self#eval_post(rest) else false
+      | SL.Store::rest -> if self#storage_store then self#eval_post(rest) else false
+      | SL.Pop::rest -> if self#stack_pop then self#eval_post(rest) else false
+      | [] -> true
+      | _ -> false
 
     method eval exp = self#eval_post(postfix exp)
     (* Prof's parser.ml treats ";" as [], wondering should I change it to "pop" *)
 
   end;;
 end;;
+
 let driver = new Driver.driver;;
 driver#process "code.txt";;
