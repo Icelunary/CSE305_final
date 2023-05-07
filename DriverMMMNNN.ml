@@ -35,7 +35,7 @@ module Driver = struct
       loop []
 
     method execute_lines lines = match lines with
-      | line::rest -> self#eval_line(line); self#execute_lines(rest)
+      | line::rest -> self#eval(line); self#execute_lines(rest)
       | [] -> raise UnexpectedBug("Done")
 
     method process filename = match (self#read_file filename) with
@@ -50,7 +50,7 @@ module Driver = struct
         | [] -> None
         | _ -> Some text
 
-    method eval_line x = match x with
+    method eval_post x = match x with
       | SL.Const(y)::rest -> (stack#push(y)); self#evalH(rest)
       | SL.Var(y)::rest -> stack#push(y); self#evalH(rest)
       | SL.Neg::rest -> self#evalH(rest)
@@ -95,7 +95,7 @@ module Driver = struct
 
     (* Get exp after "int|float|double" and evaluate it. Compile gives string list. We can iterate it to stack value and PolyOps|Storage
        once we encounter Unop|Binop|Fetch|Store. stack and storage are both inside this class*)
-    method eval exp = postfix exp
+    method eval exp = eval_post(postfix exp)
     (*
        "fetch"::rest -> stack#peek 1 and storage fetch it
        "store"::rest -> stack#peek 2 and self#bind it, then replace two with one
