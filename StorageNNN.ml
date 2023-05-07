@@ -1,11 +1,20 @@
 module StorageNNN = struct
   (* type t = (string, string list) Hashtbl.t *)
+  exception Unbounded of string
+  
 
   let storage n = object(self)
+    
     val mutable tbl = Hashtbl.create n
 
-    method store(key, value) = Some(Hashtbl.replace tbl key value)
-
+    method store(key, value, isDeclaration) = match isDeclaration with
+      | true -> self#add(key, value)
+      | false ->
+        let result = try Some(Hashtbl.find tbl key) with Not_found -> None in
+          match result with
+            | None -> raise (Unbounded key)
+            | Some x -> Hashtbl.replace tbl key value; Some(value)
+    
     method fetch(key) = 
       self#get key
     
@@ -61,3 +70,11 @@ Hashtbl.add a "h" "test1";;
 Hashtbl.add a "h" "test2";;
 Hashtbl.add a "h" "test3";;
 Hashtbl.add a "h" "test4";;
+let c = 4;;
+exception Unbounded of string
+let f2(key, value) = let result = try Some(Hashtbl.find a key) with Not_found -> None in
+  match result with
+    | None -> raise (Unbounded key)
+    | Some x -> Hashtbl.replace a key value; Some(value)
+;;
+let f3 x = x;;
