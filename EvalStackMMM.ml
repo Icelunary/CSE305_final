@@ -6,6 +6,9 @@ module EvalStack = struct
                 val mutable stack: string list = []
 
                 method push x = stack<-x::stack
+                method popNoRet = match stack with
+                  | x::rest -> stack <- rest
+                  | [] -> stack <- []
 
                 method pop = match stack with
                 | [] -> None
