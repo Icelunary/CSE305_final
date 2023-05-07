@@ -10,19 +10,6 @@ exception BadInstruction;;
 (* let pop = match stack#pop() with *)
 (*   | None -> raise BadInstruction *)
 
-let rec executeH x = match x with
-  | SL.Const(y)::rest -> (stack#push(y)); executeH(rest)
-  | SL.Var(y)::rest -> stack#push(y); executeH(rest)
-  | SL.Neg::rest -> executeH(rest)
-  | SL.Plus::rest -> executeH(rest)
-  | SL.Minus::rest -> executeH(rest)
-  | SL.Times::rest -> executeH(rest)
-  | SL.Div::rest -> executeH(rest)
-  | SL.Fetch::rest -> executeH(rest)
-  | SL.Store::rest -> executeH(rest)
-  | SL.Pop::rest -> (stack#pop); executeH(rest)
-  | [] -> 0
-  | _ -> raise BadInstruction
 
 (* expects a string of code to be executed and compiled with the postfix function from Compile.ml*)
 
@@ -30,12 +17,14 @@ let rec executeH x = match x with
 
 
 module Driver = struct
-  exception UnexpectedBug of string
+  exception UnexpectedBug of string;;
+  exception FileDoesNotExist;;
 
   class driver = object(self)
     val stack = new EvalStack.stack
     val storage = StorageNNN.storage 100
     val mutable text: string list = []
+
     method read_lines name : string list =
       let ic = open_in name in
       let try_read () =
@@ -45,28 +34,35 @@ module Driver = struct
         | None -> close_in ic; List.rev acc in
       loop []
 
-    method execute filename = read_lines filename;;
+    method execute_lines lines = match lines with
+      | line::rest -> self#eval_line(line); self#execute_lines(rest)
+      | [] -> raise UnexpectedBug("Done")
+
+    method process filename = match (self#read_file filename) with
+      | Some(content) -> self#execute_lines(content)
+      | None -> raise FileDoesNotExist
 
     method getData = match text with
       | [] -> None
       | x -> Some x
 
-    method read_lines name : string list =
-      let ic = open_in name in
-      let try_read () =
-        try Some (input_line ic) with End_of_file -> None in
-      let rec loop acc = match try_read () with
-        | Some s -> let _ = Printf.printf "Reading: %s\n" s in loop (s :: acc)
-        | None -> close_in ic; List.rev acc in
-      loop []
-
-    method readFile name = text <- self#read_lines name; match text with
+    method read_file name = match (self#read_lines name) with
         | [] -> None
         | _ -> Some text
 
-    method process name = let txt = self#readFile name in match txt with
-        | None -> raise (UnexpectedBug "No data read")
-        | Some _ -> self#processLineByLine text
+    method eval_line x = match x with
+      | SL.Const(y)::rest -> (stack#push(y)); self#evalH(rest)
+      | SL.Var(y)::rest -> stack#push(y); self#evalH(rest)
+      | SL.Neg::rest -> self#evalH(rest)
+      | SL.Plus::rest -> self#evalH(rest)
+      | SL.Minus::rest -> self#evalH(rest)
+      | SL.Times::rest -> self#evalH(rest)
+      | SL.Div::rest -> self#evalH(rest)
+      | SL.Fetch::rest -> self#evalH(rest)
+      | SL.Store::rest -> self#evalH(rest)
+      | SL.Pop::rest -> (stack#pop); self#evalH(rest)
+      | [] -> 0
+      | _ -> raise BadInstruction
 
     (* current has 1 issue
        1. If the var name starts with num, it will still create bind. Can use Swi.swi#getc to check the first char
