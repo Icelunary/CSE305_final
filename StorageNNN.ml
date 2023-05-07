@@ -7,13 +7,8 @@ module StorageNNN = struct
     
     val mutable tbl = Hashtbl.create n
 
-    method store(key, value, isDeclaration) = match isDeclaration with
-      | true -> self#add(key, value)
-      | false ->
-        let result = try Some(Hashtbl.find tbl key) with Not_found -> None in
-          match result with
-            | None -> raise (Unbounded key)
-            | Some x -> Hashtbl.replace tbl key value; Some(value)
+    method store(key, value) = Hashtbl.replace tbl key value; Some(value)
+        
     
     method fetch(key) = 
       self#get key
