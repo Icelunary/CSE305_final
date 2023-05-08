@@ -7,7 +7,7 @@ module StorageNNN = struct
     
     val mutable tbl = Hashtbl.create n
 
-    method store(key, value) = Hashtbl.replace tbl key value; Some(value)
+    method store(key, value) = Hashtbl.add tbl key value; Some(value)
         
     
     method fetch(key) = 
@@ -16,9 +16,10 @@ module StorageNNN = struct
     method pop(key) = 
       self#remove key
 
-    method add(key, value) =
-      (* Printf.printf "trying to add var: %s\n" value; *)
-      let _ = Hashtbl.add tbl key value in Some(value)
+    method remove key =
+      match self#get key with
+        | None -> let _ = Printf.printf "Unbounded var: %s\n" key in None
+        | Some hd -> let _ = Hashtbl.remove tbl key in Some(hd)
 
     method get key =
       
@@ -40,11 +41,12 @@ module StorageNNN = struct
         | None -> None
         | Some _ -> Some(Hashtbl.find_all tbl key) *)
 
-    method remove key =
-      match self#get key with
-        | None -> let _ = Printf.printf "Unbounded var: %s\n" key in None
-        | Some hd -> let _ = Hashtbl.remove tbl key in Some(hd)
-    
+
+
+    method add(key, value) =
+      (* Printf.printf "trying to add var: %s\n" value; *)
+      let _ = Hashtbl.add tbl key value in Some(value)
+
     (* recursively add, use for test *)
     method recurAdd = function
       | [] -> Some("Succeed")
