@@ -94,3 +94,15 @@ end;;
 
 let driver = new Driver.driver;;
 driver#process "code.txt";;
+(* Essay Question
+   EvalStack: a stack of string list. It can push, pop, replace, clear and peek top element from stack.
+   Storage: a hash table storing the binding of val. Store can bind a value to key/varName. Fetch can get key for the value. 
+            Pop will pop the value of key/varName and restore previous value. print_log will print out the history value for key
+   Driver: By giving a filename to driver#process, driver starts reading the content of file and process it line by line.
+          For each line, the text will be translated to tokenList and then try to execute them.
+          For const and var, they will be pushed to stack. For operations, they will follow the determined action in driver#eval_post.
+          If there are fetch/store/pop, driver will use storage#fetch, storage#store and storage#pop to  get/add/pop the value for the key/varName
+  
+  Both stack and storage do not need to know any details of the stack language commands.
+  (Not sure about this one)Also, they adapt seamlessly to possible extensions in the range of C-language commands emulated.
+  In this case, the key will be the address of the varName        *)
