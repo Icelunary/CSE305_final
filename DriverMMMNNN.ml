@@ -1,3 +1,13 @@
+(* Contributor: Howie Lin, Anthony Schiano
+   UBIT: haohuili, amschian
+    
+   Description: Driver will mimic as a compiler for c-file. We include a c-file to test
+              By giving a fileName to driver#process, the driver starts reading the content of file into list.
+              Each line is an element of list.
+              Then the driver start to process the expression line by line by calling driver#execute_line
+              For each line, they're translated into tokenList using "postFix".
+              Then, for each kind of token, driver#eval_post defines how to mimic the c-compile using stack and storge  *)
+              
 #use "StorageNNN.ml";;
 #use "EvalStackMMM.ml";;
 #use "Compile.ml";;
