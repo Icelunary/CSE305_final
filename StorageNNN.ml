@@ -1,3 +1,11 @@
+(* Contributor: Howie Lin
+   UBIT: haohuili
+   UBIT#: 50279535
+   
+   Description: This module implements the variable binding by store/fetch/pop using Hashtbl build-in functionlity.
+              It binds/read/pop value for key from table called tbl.
+              print_log key will print out the binding history for that key*)
+
 module StorageNNN = struct
   (* type t = (string, string list) Hashtbl.t *)
   exception Unbounded of string
@@ -34,8 +42,8 @@ module StorageNNN = struct
           Printf.printf "\n"
     
     (* Commented one is print list as string *)
-    method printHistoryAsList key = 
-      Hashtbl.find_all tbl key
+    (* method printHistoryAsList key = 
+      Hashtbl.find_all tbl key *)
       (* let find = try Some(self#get key) with Not_found -> None in
       match find with
         | None -> None
@@ -43,14 +51,14 @@ module StorageNNN = struct
 
 
 
-    method add(key, value) =
+    (* method add(key, value) =
       (* Printf.printf "trying to add var: %s\n" value; *)
       let _ = Hashtbl.add tbl key value in Some(value)
 
     (* recursively add, use for test *)
     method recurAdd = function
       | [] -> Some("Succeed")
-      | (k, v)::rest -> let _= self#add(k, v) in let _ = Printf.printf "adding %s %s\n" k v in self#recurAdd rest
+      | (k, v)::rest -> let _= self#add(k, v) in let _ = Printf.printf "adding %s %s\n" k v in self#recurAdd rest *)
 
     end
 
