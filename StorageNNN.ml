@@ -67,7 +67,7 @@ end;;
 (* Use for test *)
 let test = [("h", "hello"); ("h", "world"); ("h", "1"); ("1", "test")];;
 let store = StorageNNN.storage 100;;
-store#recurAdd test;;
+(* store#recurAdd test;; *)
 (* Then you can try to test other methods *)
 
 let a = Hashtbl.create 100;;
