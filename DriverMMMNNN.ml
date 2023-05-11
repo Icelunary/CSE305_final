@@ -38,7 +38,7 @@ module Driver = struct
       | [] -> true
 
     method process filename = match (self#read_file filename) with
-      | Some(content) -> self#execute_lines(content)
+      | Some(content) -> if self#execute_lines(content) then 0 else 1
       | None -> raise FileDoesNotExist
 
     method read_file name = match (self#read_lines name) with
@@ -96,13 +96,24 @@ let driver = new Driver.driver;;
 driver#process "code.txt";;
 (* Essay Question
    EvalStack: a stack of string list. It can push, pop, replace, clear and peek top element from stack.
-   Storage: a hash table storing the binding of val. Store can bind a value to key/varName. Fetch can get key for the value. 
+              the structure of the stack is basically just an ocaml list that you prepend to the front or pop from the front
+              you can push to the stack using stack#push
+              you can pop from the stack using stack#pop which either returns Some or None
+              you can pop two top of the stack using stack#popTwo which returns Some or None
+              get_stack and get_stack_h are purely for testing but returns a printable string of the current state of the stack
+              stack#peekOne and stack#peekTwo return Some or None of the top two elements without poping them off the stack
+              stack#replaceOne and stack#replaceTwoWithOne replace either the top one or two with the value given to them
+              stack#clear clears the stack completely (useful at the end of executing something)
+              the stack object made it much easier in the long term because I can just use the functions I built into it to keep track of the stack
+              instead of rewriting those functions to be inside the drive it allowed it to be more seperate, and since it doesnt need to know anything
+              about the actual data it can easily be expanded with new commands
+   Storage: a hash table storing the binding of val. Store can bind a value to key/varName. Fetch can get key for the value.
             Pop will pop the value of key/varName and restore previous value. print_log will print out the history value for key
    Driver: By giving a filename to driver#process, driver starts reading the content of file and process it line by line.
           For each line, the text will be translated to tokenList and then try to execute them.
           For const and var, they will be pushed to stack. For operations, they will follow the determined action in driver#eval_post.
           If there are fetch/store/pop, driver will use storage#fetch, storage#store and storage#pop to  get/add/pop the value for the key/varName
-  
+
   Both stack and storage do not need to know any details of the stack language commands.
   (Not sure about this one)Also, they adapt seamlessly to possible extensions in the range of C-language commands emulated.
   In this case, the key will be the address of the varName        *)
