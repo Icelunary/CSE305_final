@@ -25,7 +25,23 @@ exception BadInstruction;;
 
 (* based on https://stackoverflow.com/questions/5774934/how-do-i-read-in-lines-from-a-text-file-in-ocaml *)
 
+module CE = struct
+  include CE
+  type exp += Address of exp | Deref of exp
+  let rec ubtree2exp2 ubt = match ubt with
+    | Parser.UNode(op, subtree) -> (match op with
+      | "*" -> Deref(ubtree2exp2 subtree)
+      | "&" -> Address(ubtree2exp2 subtree)
+      | _ -> CE.ubtree2exp ubt
+    )
+  | _ -> CE.ubtree2exp ubt
+end;;
 
+let rec pcompile2 (aexp, isLvalue) = match aexp with
+  | CE.Address(bexp) -> pcompile2(bexp, true)
+  | CE.Deref(bexp) -> (pcompile2(bexp, true)) @ [SL.Fetch]
+  | _ -> Compile.pcompile(aexp, isLvalue)
+  
 module Driver = struct
   exception UnexpectedBug;;
   exception FileDoesNotExist;;
@@ -33,6 +49,8 @@ module Driver = struct
   class driver = object(self)
     val stack = new EvalStack.stack
     val storage = StorageNNN.storage 100
+
+    method fetch x = storage#fetch(x)
 
     method read_lines name : string list =
       let ic = open_in name in

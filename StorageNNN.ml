@@ -15,7 +15,7 @@ module StorageNNN = struct
     
     val mutable tbl = Hashtbl.create n
 
-    method store(key, value) = Hashtbl.add tbl key value; Some(value)
+    method store(key, value) = Hashtbl.add tbl key value; let _ = Printf.printf "Storing key: %s and value %s\n" key value in Some(value)
         
     
     method fetch(key) = 
